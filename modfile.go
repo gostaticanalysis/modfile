@@ -22,7 +22,8 @@ var Analyzer = &analysis.Analyzer{
 
 const Doc = "modfile is ..."
 
-func run(pass *analysis.Pass) (interface{}, error) {
+func run(pass *analysis.Pass) (result interface{}, rerr error) {
+	result = (*modfile.File)(nil)
 
 	cmd := exec.Command("go", "list", "-m", "-f", "{{.GoMod}}", pass.Pkg.Path())
 	cmd.Env = append([]string{"GO111MODULE", "auto"}, os.Environ()...)
@@ -38,18 +39,21 @@ func run(pass *analysis.Pass) (interface{}, error) {
 
 	output, err := cmd.Output()
 	if err != nil {
-		return nil, err
+		// ignore err
+		return
 	}
 	modfilename := strings.TrimSpace(string(output))
 
 	data, err := ioutil.ReadFile(modfilename)
 	if err != nil {
-		return nil, err
+		// ignore err
+		return
 	}
 
 	f, err := modfile.Parse(modfilename, data, nil)
 	if err != nil {
-		return nil, err
+		// ignore err
+		return
 	}
 
 	return f, nil
